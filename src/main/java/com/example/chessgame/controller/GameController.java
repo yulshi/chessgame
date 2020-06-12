@@ -1,7 +1,7 @@
 package com.example.chessgame.controller;
 
 import com.example.chessgame.message.ActionRequest;
-import com.example.chessgame.entity.Player;
+import com.example.chessgame.chess.player.Player;
 import com.example.chessgame.service.GameService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -44,7 +44,7 @@ public class GameController {
   @MessageMapping("/game/action/{id}")
   public void action(ActionRequest action, @DestinationVariable("id") String id) {
     log.info("gameId: " + id + ", 操作：" + action);
-    gameService.action(id, action.getPlayer(), action.getPosition());
+    gameService.play(id, action.getPlayer(), action.getPosition());
   }
 
   /**

@@ -1,4 +1,4 @@
-package com.example.chessgame.entity;
+package com.example.chessgame.chess.board;
 
 /**
  * @author yulshi

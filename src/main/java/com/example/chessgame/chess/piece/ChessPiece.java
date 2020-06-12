@@ -1,4 +1,6 @@
-package com.example.chessgame.entity;
+package com.example.chessgame.chess.piece;
+
+import com.example.chessgame.chess.board.Position;
 
 /**
  * @author yulshi
@@ -71,7 +73,7 @@ public class ChessPiece {
    * @author yulshi
    * @create 2020/06/09 10:33
    */
-  public static enum Color {
+  public enum Color {
     Black, Red;
   }
 
@@ -79,7 +81,7 @@ public class ChessPiece {
    * @author yulshi
    * @create 2020/06/09 10:35
    */
-  public static enum AttackType {
+  public enum AttackType {
     Adjacent, Segregative;
   }
 

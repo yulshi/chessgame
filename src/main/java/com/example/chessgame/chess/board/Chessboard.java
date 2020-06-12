@@ -1,6 +1,7 @@
-package com.example.chessgame.entity;
+package com.example.chessgame.chess.board;
 
-import com.example.chessgame.chess.Cannon;
+import com.example.chessgame.chess.piece.ChessPiece;
+import com.example.chessgame.chess.piece.Cannon;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -66,10 +67,6 @@ public class Chessboard {
 
   }
 
-  public ChessPiece[][] getGrid() {
-    return grid;
-  }
-
   /**
    * 获取位于row和col位置的棋子
    *
@@ -77,76 +74,6 @@ public class Chessboard {
    */
   public ChessPiece locate(Position position) {
     return grid[position.getRow()][position.getCol()];
-  }
-
-  /**
-   * 选定或翻子
-   *
-   * @param position
-   */
-  public ChessPiece select(Position position) {
-    ChessPiece piece = locate(position);
-    if (piece != null && piece.isHidden()) {
-      piece.setHidden(false);
-      selectedPiece = null;
-    } else {
-      selectedPiece = piece;
-    }
-    return piece;
-  }
-
-  /**
-   * 尝试把位于from的棋子移动到to的位置，如果to位置有棋子，则尝试吃掉或兑掉该子
-   *
-   * @param to
-   * @return boolean 是否成功移动到目标位置（包含兑掉的情况）
-   */
-  public boolean move(Position to) {
-
-    if (selectedPiece == null) {
-      log.info("没有任何处于'选定'状态的棋子");
-      return false;
-    }
-
-    boolean moved = true;
-
-    // 查看目标位置是否有棋子
-    ChessPiece targetPosPiece = locate(to);
-    if (targetPosPiece == null) {
-      // 把选定的棋子移动到target
-      grid[selectedPiece.getPosition().getRow()][selectedPiece.getPosition().getCol()] = null;
-      selectedPiece.setPosition(to);
-      grid[to.getRow()][to.getCol()] = selectedPiece;
-      selectedPiece = null;
-    } else {
-      // 检查target上的棋子是否为对方的棋子
-      if (!targetPosPiece.isHidden() && selectedPiece.getColor() != targetPosPiece.getColor()) {
-        // 检查是否可以可以吃掉或兑掉target位置上的棋子
-        int weightDiff = selectedPiece.getWeight() - targetPosPiece.getWeight();
-        if (weightDiff > 0 && weightDiff < 6 || weightDiff == -6) {
-          // 吃掉对方
-          grid[selectedPiece.getPosition().getRow()][selectedPiece.getPosition().getCol()] = null;
-          grid[to.getRow()][to.getCol()] = null;
-          selectedPiece.setPosition(targetPosPiece.getPosition());
-          targetPosPiece.setPosition(Position.OUT);
-          selectedPiece = null;
-        } else if (weightDiff == 0) {
-          // 兑子
-          grid[selectedPiece.getPosition().getRow()][selectedPiece.getPosition().getCol()] = null;
-          grid[to.getRow()][to.getCol()] = null;
-          selectedPiece.setPosition(Position.OUT);
-          targetPosPiece.setPosition(Position.OUT);
-          selectedPiece = null;
-        }
-      } else {
-        // 不能攻击
-        log.info("target的位置不能攻击或移动");
-        moved = false;
-      }
-    }
-
-    return moved;
-
   }
 
   /**
@@ -183,11 +110,6 @@ public class Chessboard {
       int weightDiff = selectedPiece.getWeight() - targetPosPiece.getWeight();
       if (!(selectedPiece instanceof Cannon) && (weightDiff > 0 && weightDiff < 6 || weightDiff == -6)) {
         // 吃掉对方
-//        grid[selectedPiece.getPosition().getRow()][selectedPiece.getPosition().getCol()] = null;
-//        grid[target.getRow()][target.getCol()] = selectedPiece;
-//        selectedPiece.setPosition(targetPosPiece.getPosition());
-//        targetPosPiece.setPosition(Position.OUT);
-//        selectedPiece = null;
         moveTo(target);
         attacked = true;
       } else if (weightDiff == 0) {
@@ -203,6 +125,17 @@ public class Chessboard {
 
     return attacked;
 
+  }
+
+  /**
+   * 翻子
+   *
+   * @param position
+   */
+  public void flip(Position position) {
+    ChessPiece piece = locate(position);
+    piece.setHidden(false);
+    this.selectedPiece = null;
   }
 
   public void display() {
@@ -222,6 +155,10 @@ public class Chessboard {
     }
   }
 
+  public ChessPiece[][] getGrid() {
+    return grid;
+  }
+
   public ChessPiece getSelectedPiece() {
     return selectedPiece;
   }
@@ -230,18 +167,8 @@ public class Chessboard {
     this.selectedPiece = selectedPiece;
   }
 
-  /**
-   * 翻子
-   *
-   * @param position
-   */
-  public void flip(Position position) {
-    ChessPiece piece = locate(position);
-    piece.setHidden(false);
-    this.selectedPiece = null;
-  }
 
-  public static enum Status {
+  public enum Status {
     Standby, Starting, Started, Ended;
   }
 

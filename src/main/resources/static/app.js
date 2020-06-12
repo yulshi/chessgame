@@ -50,6 +50,8 @@ function chessCallback(chessResponse) {
     let retObj = JSON.parse(chessResponse.body);
     if (retObj.success) {
         console.log("received：" + JSON.stringify(retObj.payload.activePlayer));
+        loadChessboard(retObj.payload.chessboard);
+        updatePlayerInfo(retObj.payload.activePlayer);
     } else {
         console.log("received: " + retObj.message);
     }
@@ -64,6 +66,35 @@ function playGame() {
 
 function showGreeting(message) {
     $("#greetings").append("<tr><td>" + message + "</td></tr>");
+}
+
+function loadChessboard(chessboard) {
+    let table = $('#chessboard');
+    table.find("tbody tr").remove();
+    for (let i = 0; i < chessboard.grid.length; i++) {
+        let fields = "";
+        for (let j = 0; j < chessboard.grid[i].length; j++) {
+            let piece = chessboard.grid[i][j];
+            let pos = "pos_" + i + "_" + j;
+            if (piece) {
+                let cls = piece.color == 'Red' ? 'text-danger' : 'text-nothing';
+                let name = piece.hidden ? '&nbsp;&nbsp;' : piece.name
+                fields += "<td id='" + pos + "' class='bg-info font-weight-bold " + cls + "'>" + name + "</td>"
+            } else {
+                fields += "<td id='" + pos + "'></td>"
+            }
+        }
+        table.append("<tr>" + fields + "</tr>");
+    }
+}
+
+function updatePlayerInfo(player) {
+    if (player) {
+        let color = player.color ? (player.color == 'Red' ? "红方" : "黑方") : "颜色未定";
+        $("#activePlayer").html("等待<b>" + player.name + "（" + color + "）</b>走子...")
+    } else {
+        $("#activePlayer").empty();
+    }
 }
 
 $(function () {
@@ -84,6 +115,9 @@ $(function () {
     });
     $("#send3").click(function () {
         playGame();
+    });
+    $("td").mouseover(function () {
+        console.log("clicked: " + this.id);
     });
 });
 

@@ -1,6 +1,6 @@
-package com.example.chessgame.entity;
+package com.example.chessgame.chess.board;
 
-import com.example.chessgame.chess.*;
+import com.example.chessgame.chess.piece.*;
 
 /**
  * A suite of chess pieces which consist of 2 colors (black and red)

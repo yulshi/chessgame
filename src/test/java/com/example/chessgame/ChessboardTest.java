@@ -1,8 +1,8 @@
 package com.example.chessgame;
 
-import com.example.chessgame.entity.ChessPiece;
-import com.example.chessgame.entity.Chessboard;
-import com.example.chessgame.entity.Position;
+import com.example.chessgame.chess.piece.ChessPiece;
+import com.example.chessgame.chess.board.Chessboard;
+import com.example.chessgame.chess.board.Position;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +33,7 @@ public class ChessboardTest {
     Chessboard chessboard = new Chessboard();
 
     Position pos = new Position(3, 2);
-    chessboard.select(pos);
+    chessboard.flip(pos);
 
     Assertions.assertNull(chessboard.getSelectedPiece());
     Assertions.assertFalse(chessboard.locate(pos).isHidden());
@@ -54,11 +54,11 @@ public class ChessboardTest {
 
     Position sourcePos = new Position(0, 1);
     // 翻子
-    chessboard.select(sourcePos);
+    chessboard.flip(sourcePos);
     // 选定
-    chessboard.select(sourcePos);
+    chessboard.setSelectedPiece(chessboard.locate(sourcePos));
 
-    chessboard.move(targetPos);
+    chessboard.moveTo(targetPos);
 
     Assertions.assertNull(chessboard.locate(sourcePos));
     Assertions.assertNotNull(chessboard.locate(targetPos));

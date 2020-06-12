@@ -1,7 +1,7 @@
 package com.example.chessgame.message;
 
-import com.example.chessgame.entity.Player;
-import com.example.chessgame.entity.Position;
+import com.example.chessgame.chess.player.Player;
+import com.example.chessgame.chess.board.Position;
 
 /**
  * @author yulshi

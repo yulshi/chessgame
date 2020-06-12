@@ -1,8 +1,8 @@
 package com.example.chessgame;
 
-import com.example.chessgame.entity.ChessGame;
-import com.example.chessgame.entity.Player;
-import com.example.chessgame.entity.Position;
+import com.example.chessgame.chess.ChessGame;
+import com.example.chessgame.chess.player.Player;
+import com.example.chessgame.chess.board.Position;
 import org.junit.jupiter.api.Test;
 
 /**

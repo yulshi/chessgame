@@ -1,12 +1,14 @@
-package com.example.chessgame.entity;
+package com.example.chessgame.chess;
 
-import com.example.chessgame.chess.Cannon;
+import com.example.chessgame.chess.board.Chessboard;
+import com.example.chessgame.chess.board.Position;
+import com.example.chessgame.chess.piece.ChessPiece;
+import com.example.chessgame.chess.player.Player;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
  * @author yulshi
@@ -18,13 +20,13 @@ public class ChessGame {
   public static ConcurrentHashMap<String, ChessGame> allGames = new ConcurrentHashMap<>();
 
   private final Chessboard chessboard;
-  private Player player1;
-  private Player player2;
+
   private Player activePlayer;
-  private List<Player> players;
+  private final List<Player> players;
+  private final int countOfPlayers = 2;
+  private int activePlayerIndex = -1;
 
   private final String id;
-  private boolean endGameFlag = false;
   private State state;
 
   public ChessGame() {
@@ -33,21 +35,25 @@ public class ChessGame {
     allGames.put(id, this);
     this.state = State.NEW;
     this.activePlayer = null;
+    this.players = new ArrayList<>();
   }
 
-  public void addPlayer(Player player) {
+  public synchronized void addPlayer(Player player) {
 
     // 两个玩家都加入了游戏，如果此时还有加入游戏的请求，直接忽略
-    if (player1 != null && player2 != null) {
+    if (players.size() == countOfPlayers) {
       return;
     }
 
-    if (player1 == null) {
-      player1 = player;
-    } else {
-      player2 = player;
+    if (players.size() < countOfPlayers) {
+      players.add(player);
+    }
+
+    if (players.size() == countOfPlayers) {
+      // 所有棋手都到达了，可以开始游戏了
       startGame();
     }
+
   }
 
   /**
@@ -58,16 +64,19 @@ public class ChessGame {
   public synchronized void click(Position position) {
 
     Player player = this.getActivePlayer();   // 当前玩家
-    Player opponent = opponentPlayer(player); // 当前玩家的对手
+    //Player opponent = opponentPlayer(player); // 当前玩家的对手
 
     ChessPiece piece = chessboard.locate(position);
     if (player.getColor() == null) {
       // 说明还没有选定颜色
       piece.setHidden(false);
       player.setColor(piece.getColor());
-      opponent.setColor(piece.getColor() == ChessPiece.Color.Black ?
-              ChessPiece.Color.Red : ChessPiece.Color.Black);
-      activate(opponent);
+      updateOpponets(player, opponent -> {
+        opponent.setColor(piece.getColor() == ChessPiece.Color.Black ?
+                ChessPiece.Color.Red : ChessPiece.Color.Black);
+      });
+
+      activateNext();
       return;
     }
 
@@ -82,7 +91,7 @@ public class ChessGame {
       // 如果棋子是背面朝上，则进行翻子操作
       if (piece.isHidden()) {
         chessboard.flip(position);
-        activate(opponent); // 翻子以后，就轮到对手下棋了
+        activateNext(); // 翻子以后，就轮到对手下棋了
         return;
       }
 
@@ -108,7 +117,8 @@ public class ChessGame {
       }
 
       // 如果选定的棋子不是炮，则只能移动一个格子，否则视为无效
-      if (!(selectedPiece instanceof Cannon) && !selectedPiece.getPosition().adjacentOf(position)) {
+      if (selectedPiece.getAttackType() == ChessPiece.AttackType.Adjacent
+              && !selectedPiece.getPosition().adjacentOf(position)) {
         if (log.isDebugEnabled()) {
           invalidOperation("棋子的移动范围不合法：from " + selectedPiece.getPosition() + " to " + position);
         }
@@ -120,10 +130,10 @@ public class ChessGame {
         // 选定的棋子与目标位置的棋子是相邻的位置
         if (piece == null) { // 移动
           chessboard.moveTo(position);
-          activate(opponent);
+          activateNext();
         } else { // 尝试兑子或吃子
           if (chessboard.attack(piece)) {
-            activate(opponent);
+            activateNext();
           } else {
             invalidOperation("不能攻击对方");
           }
@@ -132,7 +142,7 @@ public class ChessGame {
       }
 
       // 如果选定的棋子是炮，则攻击的目标必须是隔着一个子的对方的棋子
-      if (selectedPiece instanceof Cannon) {
+      if (selectedPiece.getAttackType() == ChessPiece.AttackType.Segregative) {
 
         // 如果目标位置上没有子，则为无效操作
         if (piece == null || piece.getColor() == selectedPiece.getColor()) {
@@ -162,7 +172,7 @@ public class ChessGame {
             return;
           }
           chessboard.moveTo(position);
-          activate(opponent);
+          activateNext();
           return;
         }
 
@@ -183,7 +193,7 @@ public class ChessGame {
             return;
           }
           chessboard.moveTo(position);
-          activate(opponent);
+          activateNext();
           return;
         }
         invalidOperation("无效操作，炮只能攻击同一行或同一列上的棋子");
@@ -218,24 +228,31 @@ public class ChessGame {
 
   private void startGame() {
     // Randomly choose a player
-    Player[] players = new Player[]{player1, player2};
-    Player player = players[new Random().nextInt(players.length)];
-    activate(player);
+    activePlayerIndex = new Random().nextInt(countOfPlayers);
+    activateNext();
     state = State.STARTED;
   }
 
-  private Player opponentPlayer(Player player) {
-    return player.equals(player1) ? player2 : player1;
-  }
+  /**
+   * 轮到下一个棋手下棋
+   */
+  private void activateNext() {
 
-  private void activate(Player player) {
-    activePlayer = player;
-    player.setActive(true);
-    opponentPlayer(player).setActive(false);
+    activePlayerIndex = (activePlayerIndex + 1) % countOfPlayers;
+    activePlayer = players.get(activePlayerIndex);
+    activePlayer.setActive(true);
+    updateOpponets(activePlayer, opponent -> {
+      opponent.setActive(false);
+    });
 
     // 检查对手的棋子是否已经全部被吃掉或兑掉
+    ChessPiece.Color color = activePlayer.getColor();
+    if (color == null) {
+      // 说明棋手还没有选定颜色
+      return;
+    }
+
     ChessPiece[][] grid = chessboard.getGrid();
-    ChessPiece.Color color = player.getColor();
     boolean hasPiece = false;
     outer:
     for (int i = 0; i < grid.length; i++) {
@@ -248,15 +265,11 @@ public class ChessGame {
     }
     if (!hasPiece) {
       // 对方已经没有棋子了，赢得比赛
-      endGame(player, player.getName() + "的棋子被吃光");
+      endGame(activePlayer, activePlayer.getName() + "的棋子被吃光");
     }
 
     // TODO: 判断是否应该和棋（即双方都不能吃光对方的子）
 
-  }
-
-  public State getState() {
-    return state;
   }
 
   /**
@@ -266,9 +279,22 @@ public class ChessGame {
    */
   public void endGame(Player loser, String reason) {
     log.info("本局游戏结束：" + reason);
-    Player player = opponentPlayer(loser);
-    player.winOneGame(this.id);
+    updateOpponets(loser, opponent -> {
+      opponent.winOneGame(this.id);
+    });
     this.state = State.END;
+  }
+
+  private void updateOpponets(Player player, Consumer<Player> consumer) {
+    for (Player opponet : players) {
+      if (!opponet.equals(player)) {
+        consumer.accept(opponet);
+      }
+    }
+  }
+
+  public State getState() {
+    return state;
   }
 
   /**

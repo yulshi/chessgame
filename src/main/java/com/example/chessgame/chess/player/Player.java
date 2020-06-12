@@ -1,4 +1,6 @@
-package com.example.chessgame.entity;
+package com.example.chessgame.chess.player;
+
+import com.example.chessgame.chess.piece.ChessPiece;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,10 +13,7 @@ import java.util.Objects;
 public class Player {
 
   private String name;
-
   private ChessPiece.Color color = null;
-  // private Chessboard chessboard;
-
   private boolean active;
   private Map<String, Integer> scores = new HashMap<>();
 
@@ -26,51 +25,9 @@ public class Player {
     this.name = name;
   }
 
-//  public synchronized void click(Position position) {
-//    ChessPiece piece = chessboard.locate(position);
-//    if (color == null) {
-//      // 说明还没有选定颜色
-//      piece.setHidden(false);
-//      this.color = piece.getColor();
-//      for (Player player : chessboard.getPlayers()) {
-//        if (player != this) {
-//          player.color = this.color == ChessPiece.Color.Black ? ChessPiece.Color.Red : ChessPiece.Color.Black;
-//        }
-//      }
-//      this.setActive(false);
-//      return;
-//    }
-//
-//    if (piece != null && piece.isHidden()) {
-//      // 仅仅是翻子操作
-//      chessboard.flip(position);
-//      this.opponent.setActive(true);
-//      return;
-//    }
-//
-//    if (piece != null && piece.getColor() == this.color) {
-//      chessboard.setSelectedPiece(piece);
-//      return;
-//    }
-//
-//    if (chessboard.getSelectedPiece() != null) {
-//      chessboard.move(position);
-//      this.setActive(false);
-//    }
-//
-//  }
-
-//  public Chessboard getChessboard() {
-//    return chessboard;
-//  }
-//
-//  public void setChessboard(Chessboard chessboard) {
-//    this.chessboard = chessboard;
-//  }
-
   public void winOneGame(String gameId) {
     Integer score = scores.get(gameId);
-    if (score != null) {
+    if (score == null) {
       score = 1;
     } else {
       score += 1;

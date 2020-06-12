@@ -1,6 +1,6 @@
 package com.example.chessgame.message;
 
-import com.example.chessgame.entity.ChessGame;
+import com.example.chessgame.chess.ChessGame;
 
 /**
  * @author yulshi
