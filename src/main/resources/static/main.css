@@ -12,3 +12,32 @@ body {
     -moz-border-radius: 5px;
     border-radius: 5px;
 }
+
+.font-bold-red {
+    font-family: "Songti SC";
+    font-weight: bold;
+    color: #ff0000;
+}
+
+.font-bold-black {
+    font-family: "Songti TC";
+    font-weight: bold;
+    color: black;
+}
+
+.piece {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    text-align: center;
+    vertical-align: middle;
+}
+
+#chessboard tr td {
+    padding: 0;
+    margin: 0;
+}
+
+.blank {
+    color: white;
+}
