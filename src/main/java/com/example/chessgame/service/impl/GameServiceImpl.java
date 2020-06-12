@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * @author yulshi
  * @create 2020/06/09 21:19
@@ -116,4 +119,18 @@ public class GameServiceImpl implements GameService {
 
   }
 
+  /**
+   * List all the the game ids that are in the specified state
+   *
+   * @param state
+   * @return
+   */
+  @Override
+  public List<String> listGames(ChessGame.State state) {
+    List<String> games = ChessGame.allGames.values().stream()
+            .filter(cg -> cg.getState() == state)
+            .map(cg -> cg.getId())
+            .collect(Collectors.toList());
+    return games;
+  }
 }

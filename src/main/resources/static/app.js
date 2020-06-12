@@ -1,30 +1,19 @@
 var stompClient = null;
-var gameId = null;
+var playerName = null;
+var initGamesSubscribe = null;
 
 function setConnected(connected) {
-    $("#connect").prop("disabled", connected);
-    $("#disconnect").prop("disabled", !connected);
+    $("#player1").prop("disabled", connected);
+    $("#send1").prop("disabled", connected);
+    $("#player2").prop("disabled", connected);
+    $("#gameId").prop("disabled", connected);
+    $("#send2").prop("disabled", connected);
     if (connected) {
         $("#conversation").show();
     } else {
         $("#conversation").hide();
     }
     $("#greetings").html("");
-}
-
-function connect() {
-    var socket = new SockJS('/chess-game-websocket');
-    stompClient = Stomp.over(socket);
-    stompClient.connect({}, function (frame) {
-        setConnected(true);
-        console.log('Connected: ' + frame);
-        stompClient.subscribe('/game/init', function (cg) {
-            gameId = JSON.parse(cg.body).payload.id;
-            showGreeting(gameId);
-            stompClient.subscribe('/game/' + gameId, chessCallback);
-        });
-
-    });
 }
 
 function disconnect() {
@@ -36,17 +25,35 @@ function disconnect() {
 }
 
 function initGame() {
+    playerName = $("#player1").val();
+
+    let initSubscribe = stompClient.subscribe('/game/init', function (cg) {
+        let gameId = JSON.parse(cg.body).payload.id;
+        stompClient.subscribe('/game/' + gameId, chessCallback);
+        stompClient.send("/app/game/allinit", {}, {});
+        initSubscribe.unsubscribe();
+    });
     stompClient.send("/app/game/init", {}, JSON.stringify({'name': $("#player1").val()}));
+    setConnected(true);
 }
 
 function joinGame() {
-    gameId = $("#gameId").val();
+    let gameId = $("#gameId").val();
+    playerName = $("#player2").val();
     console.log("sending to " + gameId)
-    stompClient.send("/app/game/join/" + gameId, {}, JSON.stringify({'name': $("#player2").val()}));
+
     stompClient.subscribe('/game/' + gameId, chessCallback);
+    stompClient.send("/app/game/join/" + gameId, {}, JSON.stringify({'name': $("#player2").val()}));
+    setConnected(true);
+
 }
 
 function chessCallback(chessResponse) {
+
+    if (initGamesSubscribe != null) {
+        initGamesSubscribe.unsubscribe();
+    }
+
     let retObj = JSON.parse(chessResponse.body);
     if (retObj.success) {
         console.log("received：" + JSON.stringify(retObj.payload.activePlayer));
@@ -56,17 +63,6 @@ function chessCallback(chessResponse) {
     } else {
         console.log("received: " + retObj.message);
     }
-}
-
-function playGame() {
-    stompClient.send("/app/game/action/" + gameId, {}, JSON.stringify({
-        'player': {'name': $("#player3").val()},
-        'position': {'row': $("#row").val(), 'col': $("#col").val()}
-    }));
-}
-
-function showGreeting(message) {
-    $("#greetings").append("<tr><td>" + message + "</td></tr>");
 }
 
 function loadChessboard(chessboard) {
@@ -108,7 +104,7 @@ function loadChessboard(chessboard) {
 }
 
 function checkGameState(state) {
-    if(state == "END") {
+    if (state == "END") {
         $("#activePlayer").html("<div>Game Over</div>");
     }
 }
@@ -124,14 +120,25 @@ function updatePlayerInfo(player) {
 }
 
 $(function () {
+    $(document).ready(function () {
+        var socket = new SockJS('/chess-game-websocket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            initGamesSubscribe = stompClient.subscribe('/game/allinit', function (gamesResp) {
+                let gameIds = JSON.parse(gamesResp.body);
+                $("#gameId").empty();
+                for (let i = 0; i < gameIds.length; i++) {
+                    let gameId = gameIds[i];
+                    console.log("get gameId: " + gameId);
+                    $("#gameId").append(new Option(gameId, gameId));
+                }
+            });
+            stompClient.send("/app/game/allinit", {}, {});
+        });
+    });
     $("form").on('submit', function (e) {
         e.preventDefault();
-    });
-    $("#connect").click(function () {
-        connect();
-    });
-    $("#disconnect").click(function () {
-        disconnect();
     });
     $("#send1").click(function () {
         initGame();
@@ -149,8 +156,9 @@ $(function () {
         let row = $(this).attr('data-row');
         let col = $(this).attr('data-col');
         console.log('data-pos = ' + row + ',' + col);
+        let gameId = $("#gameId").val();
         stompClient.send("/app/game/action/" + gameId, {}, JSON.stringify({
-            'player': {'name': $("#player3").val()},
+            'player': {'name': playerName},
             'position': {'row': row, 'col': col}
         }));
     });

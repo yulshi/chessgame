@@ -15,17 +15,7 @@
     Javascript and reload this page!</h2></noscript>
 <div id="main-content" class="container">
     <div class="row">
-        <div class="col-md-6">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="connect">WebSocket connection:</label>
-                    <button id="connect" class="btn btn-default" type="submit">Connect</button>
-                    <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect
-                    </button>
-                </div>
-            </form>
-        </div>
-        <div class="col-md-6">
+        <div class="col-md-12">
             <form class="form-inline">
                 <div class="form-group">
                     <label for="player1">姓名</label>
@@ -41,39 +31,15 @@
                 <div class="form-group">
                     <label for="player2">姓名</label>
                     <input type="text" id="player2" class="form-control" placeholder="Your name here...">
-                    <input type="text" id="gameId" class="form-control" placeholder="Game ID here...">
+                    <select id="gameId" class="form-control">
+                        <option value="0">请选择一个游戏加入</option>
+                    </select>
                 </div>
                 <button id="send2" class="btn btn-default" type="submit">加入游戏</button>
             </form>
         </div>
     </div>
-    <hr/>
-    <div class="row">
-        <div class="col-md-12">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="player2">姓名</label>
-                    <input type="text" id="player3" class="form-control" placeholder="Your name here...">
-                    <input type="text" id="row" class="form-control" placeholder="row">
-                    <input type="text" id="col" class="form-control" placeholder="col">
-                </div>
-                <button id="send3" class="btn btn-default" type="submit">点击棋盘上某个位置</button>
-            </form>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <table id="conversation" class="table table-striped">
-                <thead>
-                <tr>
-                    <th>游戏ID</th>
-                </tr>
-                </thead>
-                <tbody id="greetings">
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <hr />
     <div class="row">
         <div class="col-md-12">
             <div id="activePlayer"></div>
@@ -84,43 +50,43 @@
             <table id="chessboard" class="table table-bordered">
                 <tr>
                     <td id="pos_0_0" data-row="0" data-col="0">&nbsp;</td>
-                    <td id="pos_0_1" data-row="0" data-col="1"></td>
-                    <td id="pos_0_2" data-row="0" data-col="2"></td>
-                    <td id="pos_0_3" data-row="0" data-col="3"></td>
-                    <td id="pos_0_4" data-row="0" data-col="4"></td>
-                    <td id="pos_0_5" data-row="0" data-col="5"></td>
-                    <td id="pos_0_6" data-row="0" data-col="6"></td>
-                    <td id="pos_0_7" data-row="0" data-col="7"></td>
+                    <td id="pos_0_1" data-row="0" data-col="1">&nbsp;</td>
+                    <td id="pos_0_2" data-row="0" data-col="2">&nbsp;</td>
+                    <td id="pos_0_3" data-row="0" data-col="3">&nbsp;</td>
+                    <td id="pos_0_4" data-row="0" data-col="4">&nbsp;</td>
+                    <td id="pos_0_5" data-row="0" data-col="5">&nbsp;</td>
+                    <td id="pos_0_6" data-row="0" data-col="6">&nbsp;</td>
+                    <td id="pos_0_7" data-row="0" data-col="7">&nbsp;</td>
                 </tr>
                 <tr>
                     <td id="pos_1_0" data-row="1" data-col="0">&nbsp;</td>
-                    <td id="pos_1_1" data-row="1" data-col="1"></td>
-                    <td id="pos_1_2" data-row="1" data-col="2"></td>
-                    <td id="pos_1_3" data-row="1" data-col="3"></td>
-                    <td id="pos_1_4" data-row="1" data-col="4"></td>
-                    <td id="pos_1_5" data-row="1" data-col="5"></td>
-                    <td id="pos_1_6" data-row="1" data-col="6"></td>
-                    <td id="pos_1_7" data-row="1" data-col="7"></td>
+                    <td id="pos_1_1" data-row="1" data-col="1">&nbsp;</td>
+                    <td id="pos_1_2" data-row="1" data-col="2">&nbsp;</td>
+                    <td id="pos_1_3" data-row="1" data-col="3">&nbsp;</td>
+                    <td id="pos_1_4" data-row="1" data-col="4">&nbsp;</td>
+                    <td id="pos_1_5" data-row="1" data-col="5">&nbsp;</td>
+                    <td id="pos_1_6" data-row="1" data-col="6">&nbsp;</td>
+                    <td id="pos_1_7" data-row="1" data-col="7">&nbsp;</td>
                 </tr>
                 <tr>
                     <td id="pos_2_0" data-row="2" data-col="0">&nbsp;</td>
-                    <td id="pos_2_1" data-row="2" data-col="1"></td>
-                    <td id="pos_2_2" data-row="2" data-col="2"></td>
-                    <td id="pos_2_3" data-row="2" data-col="3"></td>
-                    <td id="pos_2_4" data-row="2" data-col="4"></td>
-                    <td id="pos_2_5" data-row="2" data-col="5"></td>
-                    <td id="pos_2_6" data-row="2" data-col="6"></td>
-                    <td id="pos_2_7" data-row="2" data-col="7"></td>
+                    <td id="pos_2_1" data-row="2" data-col="1">&nbsp;</td>
+                    <td id="pos_2_2" data-row="2" data-col="2">&nbsp;</td>
+                    <td id="pos_2_3" data-row="2" data-col="3">&nbsp;</td>
+                    <td id="pos_2_4" data-row="2" data-col="4">&nbsp;</td>
+                    <td id="pos_2_5" data-row="2" data-col="5">&nbsp;</td>
+                    <td id="pos_2_6" data-row="2" data-col="6">&nbsp;</td>
+                    <td id="pos_2_7" data-row="2" data-col="7">&nbsp;</td>
                 </tr>
                 <tr>
                     <td id="pos_3_0" data-row="3" data-col="0">&nbsp;</td>
-                    <td id="pos_3_1" data-row="3" data-col="1"></td>
-                    <td id="pos_3_2" data-row="3" data-col="2"></td>
-                    <td id="pos_3_3" data-row="3" data-col="3"></td>
-                    <td id="pos_3_4" data-row="3" data-col="4"></td>
-                    <td id="pos_3_5" data-row="3" data-col="5"></td>
-                    <td id="pos_3_6" data-row="3" data-col="6"></td>
-                    <td id="pos_3_7" data-row="3" data-col="7"></td>
+                    <td id="pos_3_1" data-row="3" data-col="1">&nbsp;</td>
+                    <td id="pos_3_2" data-row="3" data-col="2">&nbsp;</td>
+                    <td id="pos_3_3" data-row="3" data-col="3">&nbsp;</td>
+                    <td id="pos_3_4" data-row="3" data-col="4">&nbsp;</td>
+                    <td id="pos_3_5" data-row="3" data-col="5">&nbsp;</td>
+                    <td id="pos_3_6" data-row="3" data-col="6">&nbsp;</td>
+                    <td id="pos_3_7" data-row="3" data-col="7">&nbsp;</td>
                 </tr>
             </table>
         </div>

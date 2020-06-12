@@ -1,7 +1,10 @@
 package com.example.chessgame.service;
 
+import com.example.chessgame.chess.ChessGame;
 import com.example.chessgame.chess.player.Player;
 import com.example.chessgame.chess.board.Position;
+
+import java.util.List;
 
 /**
  * @author yulshi
@@ -28,5 +31,10 @@ public interface GameService {
    * 放弃比赛
    */
   void giveUp(String gameId, Player player);
+
+  /**
+   * List all the the game ids that are in the specified state
+   */
+  List<String> listGames(ChessGame.State state);
 
 }

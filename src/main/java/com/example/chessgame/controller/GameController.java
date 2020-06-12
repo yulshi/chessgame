@@ -1,12 +1,16 @@
 package com.example.chessgame.controller;
 
+import com.example.chessgame.chess.ChessGame;
 import com.example.chessgame.message.ActionRequest;
 import com.example.chessgame.chess.player.Player;
 import com.example.chessgame.service.GameService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
+
+import java.util.List;
 
 /**
  * @author yulshi
@@ -26,7 +30,6 @@ public class GameController {
   public void initGame(Player player) throws Exception {
     log.info("A new player is in..." + player);
     gameService.initGame(player);
-
   }
 
   @MessageMapping("/game/join/{id}")
@@ -57,6 +60,13 @@ public class GameController {
   public void giveUp(ActionRequest action, @DestinationVariable("id") String id) {
     log.info("gameId: " + id + ", player：" + action.getPlayer().getName() + " 放弃了比赛");
     gameService.giveUp(id, action.getPlayer());
+  }
+
+  @MessageMapping("/game/allinit")
+  @SendTo("/game/allinit")
+  public String[] getAllInitGames() {
+    List<String> gameIds = gameService.listGames(ChessGame.State.NEW);
+    return gameIds.toArray(new String[]{});
   }
 
 }
