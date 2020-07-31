@@ -265,6 +265,7 @@ public class ChessGame {
     }
     if (!hasPiece) {
       // 对方已经没有棋子了，赢得比赛
+      // TODO: 需要一个daemon来监测什么时候，有一个Player的子全部被吃掉。
       endGame(activePlayer, activePlayer.getName() + "的棋子被吃光");
     }
 
